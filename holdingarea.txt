@@ -1,0 +1,86 @@
+router.post('/signup', (req, res) => {
+    let obj = {
+        email: req.body.email,
+        password: req.body.password
+    }
+    //Check if user exists in the database already
+    connection.query('SELECT * FROM users WHERE email = ?', [req.body.email], (err, result) => {
+        if (err) throw err;
+        if (result.length > 0) {
+            console.log("user exists")
+            res.status(400).send("user exists")
+        }
+        else {
+            bcrypt.hash(req.body.password, 10, function (err, hash) {
+                console.log("this is hash", hash)
+                const user = {
+                    id: uuid.v4(),
+                    email: req.body.email,
+                    password: hash
+                }
+                connection.query('INSERT INTO users SET ?', user, (err, result) => {
+                    if (err) throw err;
+                    console.log("user saved")
+                })
+            })
+            res.send("user saved")
+        }
+    })
+
+})
+
+
+
+router.post('/login', (req, res) => {
+    connection.query('SELECT * FROM users WHERE email = ?', [req.body.email], (err, result) => {
+        if (err) throw err;
+        console.log("this is result", result)
+        const user = result[0]
+        console.log("this is id", user)
+        if (result.length > 0) {
+            bcrypt.compare(req.body.password, result[0].password, function (err, result) {
+                if (err) throw err;
+                if (result) {
+                    console.log("password correct,about to make a jwt")
+                    let token = generateAccessToken(req.body.email)
+                    console.log("this is token", token)
+                    res.status(200).send({ status: "logged-in", token: token, id: user.id, points: user.points })
+                }
+                else {
+                    res.status(401).send({ message: "password incorrect" })
+                }
+            })
+        }
+        else {
+            res.status(404).send({ message: "user not found" })
+        }
+    })
+})
+
+
+
+
+
+router.post("/verify", (req, res) => {
+
+    const token = req.body.token
+    console.log("this is token", token)
+    let result = verifyAccessToken(token)
+    if (result.result == "success") {
+        const email = result.decoded.email
+        connection.query('SELECT * FROM users WHERE email = ?', [email], (err, result) => {
+            if (err) throw err;
+            if (result.length > 0) {
+                console.log("user exists")
+                res.status(200).send(result)
+            }
+            else {
+                res.status(400).send("user does not exist")
+            }
+        })
+
+    }
+    else {
+        res.status(401).send("token is invalid")
+    }
+})
