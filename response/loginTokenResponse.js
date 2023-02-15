@@ -1,10 +1,10 @@
 
 class TokenResponse {
-    constructor(token,id, points) {
+    constructor(token,id, points,email) {
         this.token = token;
         this.id = id;
         this.points = points;
-        this.statusCode = 200;
+        this.email = email
     }
 }
 

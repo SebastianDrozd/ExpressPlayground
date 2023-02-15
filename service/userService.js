@@ -49,7 +49,7 @@ const loginUser = (email, password) => {
                 bcrypt.compare(password, user.password, function (err, result) { //compare the password to the hashed password
                     if (result) {
                         let token = generateAccessToken(email) //generate a token
-                        resolve(new TokenResponse(token, user.id, user.points)) //resolve promise w user object
+                        resolve(new TokenResponse(token, user.id, user.points,user.email)) //resolve promise w user object
                     }
                     else {
                         //if the password is incorrect, reject the promise with a PasswordMismatchError
