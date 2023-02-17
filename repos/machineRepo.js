@@ -73,7 +73,8 @@ const getUserRecentMachines = (userId) => {
 const getCompletedMachines = (userId) => {
     return new Promise((resolve, reject) => {
         const sql = `Select 
-    machines.name
+    machines.name,
+   completed.datecompleted
     from users
     INNER JOIN completed ON users.id = completed.userid
     Inner JOIN machines ON completed.machineid = machines.id
