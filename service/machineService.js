@@ -51,6 +51,7 @@ const serveRecentMachines = (userId,machineId) => {
 
 const serveCompletedMachines= (userid,machineid) => {
     return new Promise((resolve,reject) => {
+        console.log("this is userid and machineid in service",userid,machineid)
         //check if there already exists a completed machine with this userid and machineid
         getAllCompletedMachines(userid,machineid).then(result => {
             if(result.length > 0){

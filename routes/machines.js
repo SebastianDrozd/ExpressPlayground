@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const connection = require('../Utils/Connection')
-const { getAllMachines } = require('../repos/machineRepo')
+const { getAllMachines, setMachineRating, getMachineRatingById } = require('../repos/machineRepo')
 const { servGetAllUserRecentMachines, serveGetAllCompletedmachines, serveRecentMachines, serveCompletedMachines, serverGetAMachineById } = require('../service/machineService')
 
 
@@ -38,10 +38,31 @@ router.get("/complete/:id", (req, res) => {
 })
 
 
-router.post("/complete2", (req, res) => {
+router.post("/complete", (req, res) => {
     serveCompletedMachines(req.body.userid, req.body.machineid)
         .then(result => res.status(200).send(result))
         .catch(err => res.status(err.statusCode).send(err))
+})
+router.post("/like", (req, res) => {
+    const userid = req.body.userid;
+    const machineid = req.body.machineid;
+    const rating = req.body.rating;
+    const obj = {
+        userid: userid,
+        machineid: machineid,
+        rating: rating
+    }
+    console.log("this is obj", obj)
+    setMachineRating(userid, machineid, rating)
+    .then(result => res.status(200).send(result))
+    .catch(err => res.status(err.statusCode).send(err))
+})
+router.get("/like/:id", (req, res) => {
+    let machineid = req.params.id;
+    getMachineRatingById(machineid)
+    .then(result => res.status(200).send(result))
+    .catch(err => res.status(err.statusCode).send(err))
+
 })
 
 module.exports = router

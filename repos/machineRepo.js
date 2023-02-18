@@ -1,6 +1,8 @@
 const ConnectionError = require('../error/connectionError')
 const DbError = require('../error/dbError')
+const LikeAlreadyExists = require('../error/likeAlreadyExists')
 const CreatedCompletedMachineResponse = require('../response/createdCompletedMachineResponse')
+const LikeCreatedResponse = require('../response/LikeCreatedResponse')
 const MachineOwnsResponse = require('../response/machineOwnsResponse')
 const RecentMachineCreatedResponse = require('../response/RecentMachineCreatedResponse')
 const updatelastUsedDateResponse = require('../response/updateLastUsedDateResponse')
@@ -26,9 +28,14 @@ const getMachineById = (id) => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
             if (err) reject(new ConnectionError());
-            connection.query(`SELECT * FROM machines WHERE id = ${id}`, (err, result) => {
+            const sql = `SELECT DISTINCT machines.id,machines.name,machines.description,machines.difficulty,machines.owns ,rating.rating
+            from machines
+            left join rating on machines.id = rating.machineid
+            where machines.id = ${id}`
+            console.log(sql)
+            connection.query(`Select * from machines where machines.id = ${id}`, (err, result) => {
                 connection.release();
-                if (err) reject(new DbError());
+                if (err) reject(err);
                 resolve(result)
             })
         })
@@ -155,7 +162,7 @@ const updateUserPoints = (userid, points) => {
             connection.query(sql, (err, result) => {
                 connection.release();
                 if (err) reject(new DbError());
-                resolve(result)
+                resolve("updated pooints")
             })
         })
     })
@@ -186,6 +193,60 @@ const updateMachineOwns = (machineid) => {
     })
 }
 
+const setMachineRating = (userid,machineid, rating) => {
+    return new Promise((resolve,reject) => {
+        //check if there already is a rating for this machine and user
+        checkRatingExists(userid,machineid).then(result => {
+            if (result.length > 0) {
+                resolve(new LikeAlreadyExists())
+            }
+            else{
+
+                pool.getConnection((err,connection) => {
+                    if (err) reject(new ConnectionError());
+                    const sql = `Insert into rating (userid, machineid, rating) values ("${userid}", ${machineid}, ${rating})`
+                    connection.query(sql, (err, result) => {
+                        connection.release();
+                        if (err) reject(new DbError());
+                        resolve(new LikeCreatedResponse())
+                    })
+                })
+            }
+        })
+       
+    })
+}
+
+const checkRatingExists = (userid,machineid) => {
+    return new Promise((resolve,reject) => {
+        pool.getConnection((err,connection) => {
+            if (err) reject(new ConnectionError());
+            connection.query(`SELECT * FROM rating WHERE machineid = ${machineid} AND userid = "${userid}"`, (err, result) => {
+                connection.release();
+                if (err) reject(new DbError());
+                resolve(result)
+            })
+        })
+    })
+}
+
+const getMachineRatingById = (machineid) => {
+    return new Promise((resolve,reject) => {
+        pool.getConnection((err,connection) => {
+            if (err) reject(new ConnectionError());
+            const sql = `select machines.name, rating.rating 
+            from machines 
+            inner join rating on machines.id = rating.machineid
+            where machines.id = ${machineid}`
+            connection.query(sql, (err, result) => {
+                connection.release();
+                if (err) reject(new DbError());
+                resolve(result)
+            })
+        })
+    })
+}
 
 
-module.exports = {updateMachineOwns, createNewCompletedMachine,updateUserPoints,getUserById,getAllCompletedMachines, getMachineById, getAllMachines, getUserRecentMachines, getCompletedMachines, getUserMachines, updatelastUsedDate, createNewRecent }
+
+module.exports = {getMachineRatingById,setMachineRating,updateMachineOwns, createNewCompletedMachine,updateUserPoints,getUserById,getAllCompletedMachines, getMachineById, getAllMachines, getUserRecentMachines, getCompletedMachines, getUserMachines, updatelastUsedDate, createNewRecent }
