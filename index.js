@@ -13,7 +13,7 @@ app.use(cors({ origin: "*" }))
 app.use("/api/v1/users", require("./routes/users"))
 //I took out the middleware here to test the route
 app.use("/api/v1/machines",jwt, require("./routes/machines"))
-app.listen(PORT, () => {
+app.listen(process.env.PORT || 5000, () => {
     console.log("Server running on port: ", PORT)
   
   })
