@@ -1,6 +1,5 @@
 const express = require('express')
 const router = express.Router()
-const connection = require('../Utils/Connection')
 const { getAllMachines, setMachineRating, getMachineRatingById } = require('../repos/machineRepo')
 const { servGetAllUserRecentMachines, serveGetAllCompletedmachines, serveRecentMachines, serveCompletedMachines, serverGetAMachineById } = require('../service/machineService')
 

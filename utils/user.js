@@ -1,5 +1,5 @@
 const DbError = require('../error/dbError')
-const connection = require('../Utils/Connection')
+
 const pool = require('./connectionPool')
 
 

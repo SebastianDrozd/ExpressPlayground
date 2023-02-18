@@ -1,7 +1,7 @@
 const { selectAllUsersByEmail, createUser } = require("../utils/user")
 const bcrypt = require("bcrypt")
 const uuid = require('uuid')
-const connection = require('../Utils/Connection')
+
 const { generateAccessToken } = require("../utils/generateAccessToken")
 const TokenResponse = require("../response/loginTokenResponse")
 const PasswordMismatchError = require("../error/passwordMismatchError")
